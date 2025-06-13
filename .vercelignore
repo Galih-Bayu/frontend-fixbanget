@@ -1,0 +1,32 @@
+# Dependencies
+node_modules
+
+# Development files
+src
+public
+
+# Test files
+test-*.html
+final-test-*.html
+debug-*.js
+
+# Documentation
+*.md
+
+# Build artifacts (except dist)
+.vite
+.cache
+
+# IDE files
+.vscode
+.idea
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*

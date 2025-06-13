@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Test Product API</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+      .test-section {
+        margin: 20px 0;
+        padding: 20px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+      }
+      .button {
+        background: #007bff;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 4px;
+        cursor: pointer;
+        margin: 5px;
+      }
+      .button:hover {
+        background: #0056b3;
+      }
+      .results {
+        margin-top: 20px;
+        padding: 15px;
+        background: #f8f9fa;
+        border-radius: 4px;
+        white-space: pre-wrap;
+        font-family: monospace;
+        max-height: 400px;
+        overflow-y: auto;
+      }
+      .product-card {
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 15px;
+        margin: 10px;
+        display: inline-block;
+        width: 250px;
+        vertical-align: top;
+      }
+      .product-image {
+        width: 100%;
+        height: 150px;
+        object-fit: cover;
+        border-radius: 4px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Test Product API</h1>
+
+    <div class="test-section">
+      <h2>Authentication</h2>
+      <input
+        type="email"
+        id="email"
+        placeholder="Email"
+        value="test@example.com"
+      />
+      <input
+        type="password"
+        id="password"
+        placeholder="Password"
+        value="password123"
+      />
+      <button class="button" onclick="testLogin()">Login</button>
+      <button class="button" onclick="checkToken()">Check Token</button>
+
+      <div id="auth-status"></div>
+    </div>
+
+    <div class="test-section">
+      <h2>Test API Endpoints</h2>
+      <button class="button" onclick="testAllProducts()">
+        Get All Products
+      </button>
+      <button class="button" onclick="testOilyProducts()">
+        Get Oily Products
+      </button>
+      <button class="button" onclick="testNormalProducts()">
+        Get Normal Products
+      </button>
+      <button class="button" onclick="testDryProducts()">
+        Get Dry Products
+      </button>
+
+      <div id="results" class="results"></div>
+    </div>
+
+    <div class="test-section">
+      <h2>Product Display</h2>
+      <div id="products-display"></div>
+    </div>
+
+    <script>
+      const API_BASE = "http://52.77.219.198:3000/api";
+      const AUTH_TOKEN =
+        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2xsZWN0aW9uSWQiOiJwYmNfMTczNjQ1NTQ5NCIsImV4cCI6MTc1MDE0MDgzNCwiaWQiOiI0bXdoNWU3MjA0OTcwNDEiLCJyZWZyZXNoYWJsZSI6dHJ1ZSwidHlwZSI6ImF1dGgifQ.guxzRknaLiMQMnyGiXV4U-zni7bRugBaMbWFRDksyqw";
+
+      function log(message) {
+        const results = document.getElementById("results");
+        const timestamp = new Date().toLocaleTimeString();
+        results.textContent += `[${timestamp}] ${message}\n`;
+        results.scrollTop = results.scrollHeight;
+      }
+
+      async function makeApiCall(url) {
+        try {
+          log(`Making request to: ${url}`);
+          log(`Using token: ${AUTH_TOKEN.substring(0, 20)}...`);
+
+          const response = await fetch(url, {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${AUTH_TOKEN}`,
+            },
+          });
+
+          log(`Response status: ${response.status}`);
+
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+
+          const data = await response.json();
+          log(`Response data: ${JSON.stringify(data, null, 2)}`);
+
+          return data;
+        } catch (error) {
+          log(`Error: ${error.message}`);
+          return null;
+        }
+      }
+
+      async function testAllProducts() {
+        log("=== Testing All Products ===");
+        const data = await makeApiCall(`${API_BASE}/products`);
+        if (data && data.products) {
+          // Log brand diversity
+          const brands = [...new Set(data.products.map((p) => p.brand))];
+          log(`Available brands: ${brands.join(", ")}`);
+          log(`Total brands: ${brands.length}`);
+
+          displayProducts(data.products, "All Products");
+        }
+      }
+
+      async function testOilyProducts() {
+        log("=== Testing Oily Products (Frontend Filtering) ===");
+        const data = await makeApiCall(`${API_BASE}/products`);
+        if (data && data.products) {
+          const filteredProducts = data.products.filter((product) => {
+            const skinTypes = (product.skintype || "").toLowerCase();
+            return skinTypes.includes("oily");
+          });
+          log(
+            `Filtered ${filteredProducts.length} oily products from ${data.products.length} total`
+          );
+          displayProducts(
+            filteredProducts,
+            "Oily Products (Frontend Filtered)"
+          );
+        }
+      }
+
+      async function testNormalProducts() {
+        log("=== Testing Normal Products (Frontend Filtering) ===");
+        const data = await makeApiCall(`${API_BASE}/products`);
+        if (data && data.products) {
+          const filteredProducts = data.products.filter((product) => {
+            const skinTypes = (product.skintype || "").toLowerCase();
+            return skinTypes.includes("normal");
+          });
+          log(
+            `Filtered ${filteredProducts.length} normal products from ${data.products.length} total`
+          );
+          displayProducts(
+            filteredProducts,
+            "Normal Products (Frontend Filtered)"
+          );
+        }
+      }
+
+      async function testDryProducts() {
+        log("=== Testing Dry Products (Frontend Filtering) ===");
+        const data = await makeApiCall(`${API_BASE}/products`);
+        if (data && data.products) {
+          const filteredProducts = data.products.filter((product) => {
+            const skinTypes = (product.skintype || "").toLowerCase();
+            return skinTypes.includes("dry");
+          });
+          log(
+            `Filtered ${filteredProducts.length} dry products from ${data.products.length} total`
+          );
+
+          // Show brand diversity
+          const brands = [...new Set(filteredProducts.map((p) => p.brand))];
+          log(`Dry products brands: ${brands.join(", ")}`);
+
+          displayProducts(filteredProducts, "Dry Products (Frontend Filtered)");
+        }
+      }
+
+      function displayProducts(products, title) {
+        const display = document.getElementById("products-display");
+
+        const section = document.createElement("div");
+        section.innerHTML = `
+                <h3>${title} (${products.length} products)</h3>
+                <div class="products-grid">
+                    ${products
+                      .slice(0, 6)
+                      .map(
+                        (product) => `
+                        <div class="product-card">
+                            <img src="${
+                              product.picture_src ||
+                              product.picture ||
+                              "https://via.placeholder.com/250x150"
+                            }" 
+                                 alt="${product.product_name}" 
+                                 class="product-image"
+                                 onerror="this.src='https://via.placeholder.com/250x150'">
+                            <h4>${product.product_name}</h4>
+                            <p><strong>Brand:</strong> ${product.brand}</p>
+                            <p><strong>Type:</strong> ${
+                              product.product_type
+                            }</p>
+                            <p><strong>Skin Type:</strong> ${
+                              product.skintype
+                            }</p>
+                            <p><strong>Price:</strong> Rp ${
+                              product.price?.toLocaleString("id-ID") || "N/A"
+                            }</p>
+                        </div>
+                    `
+                      )
+                      .join("")}
+                </div>
+            `;
+
+        display.appendChild(section);
+      }
+
+      // Set token in localStorage for main app
+      function setTokenForMainApp() {
+        localStorage.setItem("dermalyze_token", AUTH_TOKEN);
+        log("Token set in localStorage for main app");
+      }
+
+      // Auto-test on page load
+      window.onload = function () {
+        log("Page loaded. Ready to test API endpoints.");
+        setTokenForMainApp();
+      };
+    </script>
+  </body>
+</html>

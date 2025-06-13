@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Gambar Analisis - Dermalyze</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .test-section h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        .url-test {
+            margin: 10px 0;
+            padding: 10px;
+            background: #f9f9f9;
+            border-radius: 5px;
+        }
+        .url-test img {
+            max-width: 200px;
+            max-height: 150px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            margin: 5px 0;
+        }
+        .status {
+            padding: 5px 10px;
+            border-radius: 3px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .loading { background: #fff3cd; color: #856404; }
+        .url-input {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 10px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🖼️ Debug Gambar Analisis - Dermalyze</h1>
+        <p>Tool untuk menguji dan debug masalah gambar yang tidak muncul di modal detail analisis.</p>
+    </div>
+
+    <div class="container">
+        <div class="test-section">
+            <h3>🧪 Test URL Gambar Manual</h3>
+            <input type="text" id="manualUrl" class="url-input" placeholder="Masukkan URL gambar untuk ditest...">
+            <button onclick="testManualUrl()">Test URL</button>
+            <div id="manualResult"></div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="test-section">
+            <h3>🔗 Test URL Pattern PocketBase</h3>
+            <p>Test berbagai format URL PocketBase dengan data sample:</p>
+            <input type="text" id="recordId" class="url-input" placeholder="Record ID (contoh: abc123def456789)" value="sample123456789">
+            <input type="text" id="filename" class="url-input" placeholder="Filename (contoh: image.jpg)" value="sample_image.jpg">
+            <button onclick="testPocketBaseUrls()">Test PocketBase URLs</button>
+            <div id="pocketbaseResult"></div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="test-section">
+            <h3>🌐 Test Backend API Endpoints</h3>
+            <button onclick="testBackendUrls()">Test Backend URLs</button>
+            <div id="backendResult"></div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="test-section">
+            <h3>📊 Test History API</h3>
+            <button onclick="testHistoryApi()">Ambil Data History</button>
+            <div id="historyResult"></div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="test-section">
+            <h3>📝 Debug Log</h3>
+            <button onclick="clearLog()">Clear Log</button>
+            <div id="debugLog" class="log"></div>
+        </div>
+    </div>
+
+    <script>
+        let debugLog = [];
+
+        function log(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            const logMessage = `[${timestamp}] ${message}`;
+            debugLog.push(logMessage);
+            document.getElementById('debugLog').textContent = debugLog.join('\n');
+            console.log(logMessage);
+        }
+
+        function clearLog() {
+            debugLog = [];
+            document.getElementById('debugLog').textContent = '';
+        }
+
+        function testImage(url, container, label) {
+            const div = document.createElement('div');
+            div.className = 'url-test';
+            div.innerHTML = `
+                <strong>${label}:</strong><br>
+                <code>${url}</code>
+                <span class="status loading">Testing...</span>
+                <br>
+                <img src="${url}" alt="Test Image" style="display: none;">
+                <div class="placeholder" style="display: none; padding: 20px; background: #f0f0f0; color: #666; text-align: center;">
+                    Image not found
+                </div>
+            `;
+            
+            const img = div.querySelector('img');
+            const status = div.querySelector('.status');
+            const placeholder = div.querySelector('.placeholder');
+            
+            img.onload = function() {
+                status.textContent = '✅ Success';
+                status.className = 'status success';
+                img.style.display = 'block';
+                log(`✅ Image loaded: ${url}`);
+            };
+            
+            img.onerror = function() {
+                status.textContent = '❌ Failed';
+                status.className = 'status error';
+                placeholder.style.display = 'block';
+                log(`❌ Image failed: ${url}`);
+            };
+            
+            container.appendChild(div);
+            
+            // Start loading
+            setTimeout(() => {
+                img.src = url;
+            }, 100);
+        }
+
+        function testManualUrl() {
+            const url = document.getElementById('manualUrl').value.trim();
+            if (!url) {
+                alert('Masukkan URL terlebih dahulu!');
+                return;
+            }
+            
+            const container = document.getElementById('manualResult');
+            container.innerHTML = '';
+            
+            log(`🧪 Testing manual URL: ${url}`);
+            testImage(url, container, 'Manual URL');
+        }
+
+        function testPocketBaseUrls() {
+            const recordId = document.getElementById('recordId').value.trim();
+            const filename = document.getElementById('filename').value.trim();
+            
+            if (!recordId || !filename) {
+                alert('Masukkan Record ID dan Filename!');
+                return;
+            }
+            
+            const container = document.getElementById('pocketbaseResult');
+            container.innerHTML = '';
+            
+            log(`🔗 Testing PocketBase URLs with recordId: ${recordId}, filename: ${filename}`);
+            
+            const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2xsZWN0aW9uSWQiOiJwYmNfMTczNjQ1NTQ5NCIsImV4cCI6MTc1MDE0MDgzNCIsiaWQiOiI0bXdoNWU3MjA0OTcwNDEiLCJyZWZyZXNoYWJsZSI6dHJ1ZSwidHlwZSI6ImF1dGgifQ.guxzRknaLiMQMnyGiXV4U-zni7bRugBaMbWFRDksyqw";
+            
+            const urls = [
+                `/files/pbc_2982428850/${recordId}/${filename}?token=${token}`,
+                `/files/pbc_2982428850/${recordId}/${filename}`,
+                `/api/files/pbc_2982428850/${recordId}/${filename}?token=${token}`,
+                `/api/files/pbc_2982428850/${recordId}/${filename}`,
+                `http://52.77.219.198:8090/api/files/pbc_2982428850/${recordId}/${filename}?token=${token}`,
+                `http://52.77.219.198:8090/api/files/pbc_2982428850/${recordId}/${filename}`
+            ];
+            
+            urls.forEach((url, index) => {
+                testImage(url, container, `PocketBase URL ${index + 1}`);
+            });
+        }
+
+        function testBackendUrls() {
+            const container = document.getElementById('backendResult');
+            container.innerHTML = '';
+            
+            log('🌐 Testing Backend API endpoints');
+            
+            const filename = 'sample_image.jpg';
+            const urls = [
+                `/api/images/${filename}`,
+                `/api/image/${filename}`,
+                `/api/files/${filename}`,
+                `/api/file/${filename}`,
+                `http://52.77.219.198:3000/api/images/${filename}`,
+                `http://52.77.219.198:3000/api/image/${filename}`,
+                `http://52.77.219.198:3000/images/${filename}`,
+                `http://52.77.219.198:3000/uploads/${filename}`
+            ];
+            
+            urls.forEach((url, index) => {
+                testImage(url, container, `Backend URL ${index + 1}`);
+            });
+        }
+
+        async function testHistoryApi() {
+            const container = document.getElementById('historyResult');
+            container.innerHTML = '<p>Loading history data...</p>';
+            
+            log('📊 Testing History API');
+            
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    throw new Error('No authentication token found');
+                }
+                
+                const response = await fetch('/api/history?page=1&limit=5', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                log(`📊 History API response: ${JSON.stringify(data, null, 2)}`);
+                
+                if (data.success && data.history && data.history.length > 0) {
+                    container.innerHTML = '<h4>Sample History Data:</h4>';
+                    
+                    data.history.slice(0, 3).forEach((item, index) => {
+                        const div = document.createElement('div');
+                        div.className = 'url-test';
+                        div.innerHTML = `
+                            <strong>History Item ${index + 1}:</strong><br>
+                            <strong>ID:</strong> ${item.id}<br>
+                            <strong>Wajah:</strong> ${item.wajah || 'N/A'}<br>
+                            <strong>Created:</strong> ${item.created || item.createdAt}<br>
+                        `;
+                        container.appendChild(div);
+                        
+                        if (item.wajah) {
+                            // Test the image URL from this history item
+                            const imageUrl = buildImageUrl(item.wajah, item.id);
+                            log(`🖼️ Testing image from history: ${imageUrl}`);
+                            testImage(imageUrl, container, `History Image ${index + 1}`);
+                        }
+                    });
+                } else {
+                    container.innerHTML = '<p>No history data found or empty response</p>';
+                }
+                
+            } catch (error) {
+                log(`❌ History API error: ${error.message}`);
+                container.innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
+            }
+        }
+
+        function buildImageUrl(imagePath, recordId = null) {
+            if (!imagePath) return null;
+            
+            // Clean the path
+            let cleanPath = imagePath;
+            if (cleanPath.startsWith("uploads/")) {
+                cleanPath = cleanPath.substring(8);
+            }
+            
+            const filename = cleanPath.includes("/") ? cleanPath.split("/").pop() : cleanPath;
+            
+            if (recordId) {
+                const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2xsZWN0aW9uSWQiOiJwYmNfMTczNjQ1NTQ5NCIsImV4cCI6MTc1MDE0MDgzNCIsiaWQiOiI0bXdoNWU3MjA0OTcwNDEiLCJyZWZyZXNoYWJsZSI6dHJ1ZSwidHlwZSI6ImF1dGgifQ.guxzRknaLiMQMnyGiXV4U-zni7bRugBaMbWFRDksyqw";
+                return `/files/pbc_2982428850/${recordId}/${filename}?token=${token}`;
+            }
+            
+            return `/api/images/${filename}`;
+        }
+
+        // Initialize
+        log('🚀 Image Debug Tool initialized');
+        log('💡 Tip: Buka Developer Tools (F12) untuk melihat network requests');
+    </script>
+</body>
+</html>

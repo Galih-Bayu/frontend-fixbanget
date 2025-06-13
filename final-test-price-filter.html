@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Final Test - Filter Harga Amanin</title>
+    <style>
+      /* Base Styles */
+      body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 20px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: #333;
+        min-height: 100vh;
+        animation: backgroundShift 10s ease-in-out infinite alternate;
+      }
+
+      @keyframes backgroundShift {
+        0% { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        100% { background: linear-gradient(135deg, #764ba2 0%, #667eea 100%); }
+      }
+
+      .container {
+        background: white;
+        padding: 30px;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        animation: containerFadeIn 1s ease-out;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .container::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+        animation: shimmer 3s infinite;
+      }
+
+      @keyframes containerFadeIn {
+        from { opacity: 0; transform: translateY(30px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+
+      @keyframes shimmer {
+        0% { left: -100%; }
+        100% { left: 100%; }
+      }
+
+      .header {
+        text-align: center;
+        margin-bottom: 30px;
+        color: #2c3e50;
+        animation: headerSlideDown 1.2s ease-out;
+      }
+
+      .header h1 {
+        animation: titleBounce 2s ease-out;
+        margin-bottom: 10px;
+      }
+
+      @keyframes headerSlideDown {
+        from { opacity: 0; transform: translateY(-50px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+
+      @keyframes titleBounce {
+        0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+        40% { transform: translateY(-10px); }
+        60% { transform: translateY(-5px); }
+      }
+
+      /* Test Card Animations */
+      .test-card {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+        border-left: 4px solid #3498db;
+        animation: cardSlideIn 0.8s ease-out forwards;
+        opacity: 0;
+        transform: translateX(-50px);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .test-card:nth-child(2) { animation-delay: 0.2s; }
+      .test-card:nth-child(3) { animation-delay: 0.4s; }
+      .test-card:nth-child(4) { animation-delay: 0.6s; }
+      .test-card:nth-child(5) { animation-delay: 0.8s; }
+
+      .test-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+      }
+
+      @keyframes cardSlideIn {
+        to { opacity: 1; transform: translateX(0); }
+      }
+
+      /* Status Classes with Animations */
+      .success {
+        border-left-color: #27ae60;
+        background: #d5f4e6;
+        animation: successPulse 2s ease-in-out infinite;
+      }
+
+      .error {
+        border-left-color: #e74c3c;
+        background: #fdeaea;
+        animation: errorShake 0.5s ease-in-out;
+      }
+
+      .warning {
+        border-left-color: #f39c12;
+        background: #fef9e7;
+        animation: warningGlow 2s ease-in-out infinite alternate;
+      }
+
+      @keyframes successPulse {
+        0%, 100% { box-shadow: 0 0 0 0 rgba(39, 174, 96, 0.4); }
+        50% { box-shadow: 0 0 0 10px rgba(39, 174, 96, 0); }
+      }
+
+      @keyframes errorShake {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-5px); }
+        75% { transform: translateX(5px); }
+      }
+
+      @keyframes warningGlow {
+        from { box-shadow: 0 0 5px rgba(243, 156, 18, 0.5); }
+        to { box-shadow: 0 0 20px rgba(243, 156, 18, 0.8); }
+      }
+
+      /* Button Animations */
+      .controls {
+        display: flex;
+        gap: 15px;
+        align-items: center;
+        flex-wrap: wrap;
+        margin-bottom: 20px;
+      }
+
+      button {
+        background: #3498db;
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 500;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+        transform: translateZ(0);
+      }
+
+      button::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 0;
+        height: 0;
+        background: rgba(255,255,255,0.3);
+        border-radius: 50%;
+        transform: translate(-50%, -50%);
+        transition: width 0.6s, height 0.6s;
+      }
+
+      button:hover::before {
+        width: 300px;
+        height: 300px;
+      }
+
+      button:hover {
+        background: #2980b9;
+        transform: translateY(-3px) scale(1.05);
+        box-shadow: 0 10px 25px rgba(52, 152, 219, 0.4);
+      }
+
+      button:active {
+        transform: translateY(-1px) scale(1.02);
+      }
+
+      button.success {
+        background: #27ae60;
+      }
+
+      button.success:hover {
+        background: #219a52;
+        box-shadow: 0 10px 25px rgba(39, 174, 96, 0.4);
+      }
+
+      button.danger {
+        background: #e74c3c;
+      }
+
+      button.danger:hover {
+        background: #c0392b;
+        box-shadow: 0 10px 25px rgba(231, 76, 60, 0.4);
+      }
+
+      button.warning {
+        background: #f39c12;
+      }
+
+      button.warning:hover {
+        background: #e67e22;
+        box-shadow: 0 10px 25px rgba(243, 156, 18, 0.4);
+      }
+
+      /* Loading Button State */
+      button.loading {
+        pointer-events: none;
+        opacity: 0.7;
+      }
+
+      button.loading::after {
+        content: '';
+        position: absolute;
+        width: 16px;
+        height: 16px;
+        margin: auto;
+        border: 2px solid transparent;
+        border-top-color: #ffffff;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        right: 0;
+      }
+
+      /* Select Animations */
+      select {
+        padding: 10px 15px;
+        border: 2px solid #ddd;
+        border-radius: 8px;
+        font-size: 14px;
+        background: white;
+        transition: all 0.3s ease;
+        cursor: pointer;
+      }
+
+      select:focus {
+        outline: none;
+        border-color: #3498db;
+        box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        transform: scale(1.02);
+      }
+
+      select:hover {
+        border-color: #3498db;
+      }
+
+      /* Result Grid Animations */
+      .result-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 20px;
+        margin-top: 20px;
+      }
+
+      .stat-box {
+        background: white;
+        padding: 15px;
+        border-radius: 8px;
+        border: 1px solid #ddd;
+        text-align: center;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        animation: statBoxFadeIn 0.6s ease-out forwards;
+        opacity: 0;
+        transform: translateY(20px) scale(0.9);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .stat-box:nth-child(1) { animation-delay: 0.1s; }
+      .stat-box:nth-child(2) { animation-delay: 0.2s; }
+      .stat-box:nth-child(3) { animation-delay: 0.3s; }
+      .stat-box:nth-child(4) { animation-delay: 0.4s; }
+      .stat-box:nth-child(5) { animation-delay: 0.5s; }
+      .stat-box:nth-child(6) { animation-delay: 0.6s; }
+
+      .stat-box::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(52, 152, 219, 0.1), transparent);
+        transition: left 0.5s;
+      }
+
+      .stat-box:hover::before {
+        left: 100%;
+      }
+
+      .stat-box:hover {
+        transform: translateY(-5px) scale(1.05);
+        box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+        border-color: #3498db;
+      }
+
+      @keyframes statBoxFadeIn {
+        to { opacity: 1; transform: translateY(0) scale(1); }
+      }
+
+      .stat-number {
+        font-size: 2em;
+        font-weight: bold;
+        color: #3498db;
+        animation: numberCountUp 1s ease-out;
+        position: relative;
+        z-index: 1;
+      }
+
+      @keyframes numberCountUp {
+        from { opacity: 0; transform: scale(0.5); }
+        to { opacity: 1; transform: scale(1); }
+      }
+
+      .stat-label {
+        color: #666;
+        font-size: 0.9em;
+        position: relative;
+        z-index: 1;
+      }
+
+      /* Product Sample Animations */
+      .product-sample {
+        background: #ecf0f1;
+        padding: 10px;
+        border-radius: 5px;
+        margin: 5px 0;
+        font-family: 'Courier New', monospace;
+        font-size: 0.9em;
+        animation: sampleSlideIn 0.5s ease-out;
+        transition: all 0.3s ease;
+      }
+
+      .product-sample:hover {
+        background: #d5dbdb;
+        transform: translateX(10px);
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      }
+
+      @keyframes sampleSlideIn {
+        from { opacity: 0; transform: translateX(-20px); }
+        to { opacity: 1; transform: translateX(0); }
+      }
+
+      /* Loading Animations */
+      .loading {
+        text-align: center;
+        padding: 20px;
+        color: #666;
+        animation: loadingPulse 2s ease-in-out infinite;
+      }
+
+      @keyframes loadingPulse {
+        0%, 100% { opacity: 0.6; }
+        50% { opacity: 1; }
+      }
+
+      /* Enhanced Spinner */
+      .spinner {
+        border: 3px solid #f3f3f3;
+        border-top: 3px solid #3498db;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite, spinnerGlow 2s ease-in-out infinite alternate;
+        margin: 0 auto 10px;
+        position: relative;
+      }
+
+      .spinner::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 20px;
+        height: 20px;
+        background: #3498db;
+        border-radius: 50%;
+        transform: translate(-50%, -50%);
+        animation: innerSpin 2s linear infinite reverse;
+      }
+
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+
+      @keyframes innerSpin {
+        0% { transform: translate(-50%, -50%) rotate(0deg) scale(0.5); }
+        50% { transform: translate(-50%, -50%) rotate(180deg) scale(1); }
+        100% { transform: translate(-50%, -50%) rotate(360deg) scale(0.5); }
+      }
+
+      @keyframes spinnerGlow {
+        from { box-shadow: 0 0 5px rgba(52, 152, 219, 0.5); }
+        to { box-shadow: 0 0 20px rgba(52, 152, 219, 0.8); }
+      }
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>🧪 Final Test - Filter Harga Amanin</h1>
+        <p>
+          Comprehensive testing untuk memastikan filter harga berfungsi dengan
+          benar
+        </p>
+      </div>
+
+      <div class="test-card">
+        <h3>🔌 1. Koneksi API</h3>
+        <div class="controls">
+          <button onclick="testApiConnection()">Test API Connection</button>
+          <span id="api-status">Belum ditest</span>
+        </div>
+        <div id="api-result"></div>
+      </div>
+
+      <div class="test-card">
+        <h3>🔍 2. Filter Logic Test</h3>
+        <div class="controls">
+          <label>
+            Max Price:
+            <select id="testMaxPrice" onchange="testFilterLogic()">
+              <option value="0">All Prices</option>
+              <option value="50000">≤ Rp 50.000</option>
+              <option value="100000">≤ Rp 100.000</option>
+              <option value="200000">≤ Rp 200.000</option>
+              <option value="300000">≤ Rp 300.000</option>
+              <option value="500000">≤ Rp 500.000</option>
+            </select>
+          </label>
+          <button onclick="testFilterLogic()">Apply Filter</button>
+          <button onclick="testAllRanges()" class="success">
+            Test All Ranges
+          </button>
+        </div>
+        <div id="filter-result"></div>
+      </div>
+
+      <div class="test-card">
+        <h3>📊 3. Data Analysis</h3>
+        <div class="controls">
+          <button onclick="analyzeData()">Analyze Product Data</button>
+          <button onclick="validatePrices()" class="warning">
+            Validate Prices
+          </button>
+        </div>
+        <div id="analysis-result"></div>
+      </div>
+
+      <div class="test-card">
+        <h3>✅ 4. Test Results Summary</h3>
+        <div id="summary-result">
+          <div class="loading">
+            <div class="spinner"></div>
+            Menunggu test selesai...
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const API_BASE = "http://52.77.219.198:3000/api";
+      let allProducts = [];
+      let testResults = {
+        apiConnection: false,
+        filterLogic: false,
+        dataAnalysis: false,
+        priceValidation: false,
+      };
+
+      // Get auth token
+      function getAuthToken() {
+        return (
+          localStorage.getItem("authToken") ||
+          "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2xsZWN0aW9uSWQiOiJwYmNfMTczNjQ1NTQ5NCIsImV4cCI6MTc1MDE0MDgzNCwiaWQiOiI0bXdoNWU3MjA0OTcwNDEiLCJyZWZyZXNoYWJsZSI6dHJ1ZSwidHlwZSI6ImF1dGgifQ.guxzRknaLiMQMnyGiXV4U-zni7bRugBaMbWFRDksyqw"
+        );
+      }
+
+      // Format price
+      function formatPrice(price) {
+        if (price === null || price === undefined || isNaN(price)) {
+          return "Harga tidak tersedia";
+        }
+        return new Intl.NumberFormat("id-ID", {
+          style: "currency",
+          currency: "IDR",
+          minimumFractionDigits: 0,
+          maximumFractionDigits: 0,
+        }).format(price);
+      }
+
+      // Test API connection
+      async function testApiConnection() {
+        const statusEl = document.getElementById("api-status");
+        const resultEl = document.getElementById("api-result");
+
+        statusEl.textContent = "Testing...";
+        statusEl.style.color = "#f39c12";
+
+        try {
+          const response = await fetch(`${API_BASE}/products`, {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${getAuthToken()}`,
+            },
+          });
+
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+          }
+
+          const data = await response.json();
+          allProducts = data.products || [];
+
+          statusEl.textContent = "✅ Connected";
+          statusEl.style.color = "#27ae60";
+
+          resultEl.innerHTML = `
+                    <div class="result-grid">
+                        <div class="stat-box">
+                            <div class="stat-number">${allProducts.length}</div>
+                            <div class="stat-label">Total Products</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-number">${response.status}</div>
+                            <div class="stat-label">HTTP Status</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-number">${
+                              data.success ? "YES" : "NO"
+                            }</div>
+                            <div class="stat-label">API Success</div>
+                        </div>
+                    </div>
+                `;
+
+          testResults.apiConnection = true;
+          updateSummary();
+        } catch (error) {
+          statusEl.textContent = "❌ Failed";
+          statusEl.style.color = "#e74c3c";
+
+          resultEl.innerHTML = `
+                    <div class="error">
+                        <strong>Error:</strong> ${error.message}
+                    </div>
+                `;
+
+          testResults.apiConnection = false;
+          updateSummary();
+        }
+      }
+
+      // Test filter logic
+      function testFilterLogic() {
+        const resultEl = document.getElementById("filter-result");
+        const maxPrice = parseInt(
+          document.getElementById("testMaxPrice").value
+        );
+
+        if (allProducts.length === 0) {
+          resultEl.innerHTML =
+            '<div class="error">❌ No products loaded. Test API connection first.</div>';
+          return;
+        }
+
+        // Apply filter (same logic as in the app)
+        let filteredProducts;
+        if (maxPrice === 0) {
+          filteredProducts = [...allProducts];
+        } else {
+          filteredProducts = allProducts.filter(
+            (product) => (product.price || 0) <= maxPrice
+          );
+        }
+
+        const priceText =
+          maxPrice === 0 ? "All Prices" : `≤ ${formatPrice(maxPrice)}`;
+        const filterRatio = (
+          (filteredProducts.length / allProducts.length) *
+          100
+        ).toFixed(1);
+
+        resultEl.innerHTML = `
+                <div class="result-grid">
+                    <div class="stat-box">
+                        <div class="stat-number">${filteredProducts.length}</div>
+                        <div class="stat-label">Filtered Products</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-number">${filterRatio}%</div>
+                        <div class="stat-label">Filter Ratio</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-number">${priceText}</div>
+                        <div class="stat-label">Price Filter</div>
+                    </div>
+                </div>
+            `;
+
+        // Show sample products
+        if (filteredProducts.length > 0) {
+          const samples = filteredProducts
+            .slice(0, 3)
+            .map((p) => `${p.product_name}: ${formatPrice(p.price)}`)
+            .join('</div><div class="product-sample">');
+
+          resultEl.innerHTML += `
+                    <h4>Sample Products:</h4>
+                    <div class="product-sample">${samples}</div>
+                `;
+        }
+
+        testResults.filterLogic = filteredProducts.length >= 0;
+        updateSummary();
+      }
+
+      // Test all price ranges
+      function testAllRanges() {
+        const resultEl = document.getElementById("filter-result");
+
+        if (allProducts.length === 0) {
+          resultEl.innerHTML =
+            '<div class="error">❌ No products loaded. Test API connection first.</div>';
+          return;
+        }
+
+        const ranges = [
+          { name: "All Prices", max: 0 },
+          { name: "≤ Rp 50K", max: 50000 },
+          { name: "≤ Rp 100K", max: 100000 },
+          { name: "≤ Rp 200K", max: 200000 },
+          { name: "≤ Rp 300K", max: 300000 },
+          { name: "≤ Rp 500K", max: 500000 },
+        ];
+
+        let rangeResults = "";
+        ranges.forEach((range) => {
+          let count;
+          if (range.max === 0) {
+            count = allProducts.length;
+          } else {
+            count = allProducts.filter(
+              (p) => (p.price || 0) <= range.max
+            ).length;
+          }
+
+          rangeResults += `
+                    <div class="stat-box">
+                        <div class="stat-number">${count}</div>
+                        <div class="stat-label">${range.name}</div>
+                    </div>
+                `;
+        });
+
+        resultEl.innerHTML = `
+                <h4>All Price Range Results:</h4>
+                <div class="result-grid">${rangeResults}</div>
+            `;
+
+        testResults.filterLogic = true;
+        updateSummary();
+      }
+
+      // Analyze data
+      function analyzeData() {
+        const resultEl = document.getElementById("analysis-result");
+
+        if (allProducts.length === 0) {
+          resultEl.innerHTML =
+            '<div class="error">❌ No products loaded. Test API connection first.</div>';
+          return;
+        }
+
+        const prices = allProducts
+          .map((p) => p.price)
+          .filter(
+            (price) => price !== null && price !== undefined && !isNaN(price)
+          )
+          .sort((a, b) => a - b);
+
+        const stats = {
+          total: allProducts.length,
+          withPrice: prices.length,
+          withoutPrice: allProducts.length - prices.length,
+          min: prices[0] || 0,
+          max: prices[prices.length - 1] || 0,
+          avg:
+            prices.length > 0
+              ? Math.round(prices.reduce((a, b) => a + b, 0) / prices.length)
+              : 0,
+        };
+
+        resultEl.innerHTML = `
+                <div class="result-grid">
+                    <div class="stat-box">
+                        <div class="stat-number">${stats.total}</div>
+                        <div class="stat-label">Total Products</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-number">${stats.withPrice}</div>
+                        <div class="stat-label">With Valid Price</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-number">${stats.withoutPrice}</div>
+                        <div class="stat-label">Without Price</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-number">${formatPrice(stats.min)}</div>
+                        <div class="stat-label">Min Price</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-number">${formatPrice(stats.max)}</div>
+                        <div class="stat-label">Max Price</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-number">${formatPrice(stats.avg)}</div>
+                        <div class="stat-label">Average Price</div>
+                    </div>
+                </div>
+            `;
+
+        testResults.dataAnalysis = true;
+        updateSummary();
+      }
+
+      // Validate prices
+      function validatePrices() {
+        const resultEl = document.getElementById("analysis-result");
+
+        if (allProducts.length === 0) {
+          resultEl.innerHTML =
+            '<div class="error">❌ No products loaded. Test API connection first.</div>';
+          return;
+        }
+
+        const validation = {
+          nullPrices: allProducts.filter((p) => p.price === null).length,
+          undefinedPrices: allProducts.filter((p) => p.price === undefined)
+            .length,
+          nanPrices: allProducts.filter((p) => isNaN(p.price)).length,
+          zeroPrices: allProducts.filter((p) => p.price === 0).length,
+          negativePrices: allProducts.filter((p) => p.price < 0).length,
+          validPrices: allProducts.filter((p) => p.price > 0 && !isNaN(p.price))
+            .length,
+        };
+
+        const isValid =
+          validation.validPrices > 0 && validation.negativePrices === 0;
+
+        resultEl.innerHTML = `
+                <div class="${isValid ? "success" : "error"}">
+                    <h4>Price Validation Results:</h4>
+                    <div class="result-grid">
+                        <div class="stat-box">
+                            <div class="stat-number">${
+                              validation.validPrices
+                            }</div>
+                            <div class="stat-label">Valid Prices</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-number">${
+                              validation.nullPrices
+                            }</div>
+                            <div class="stat-label">Null Prices</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-number">${
+                              validation.undefinedPrices
+                            }</div>
+                            <div class="stat-label">Undefined Prices</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-number">${
+                              validation.zeroPrices
+                            }</div>
+                            <div class="stat-label">Zero Prices</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-number">${
+                              validation.negativePrices
+                            }</div>
+                            <div class="stat-label">Negative Prices</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-number">${
+                              isValid ? "✅" : "❌"
+                            }</div>
+                            <div class="stat-label">Overall Status</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+        testResults.priceValidation = isValid;
+        updateSummary();
+      }
+
+      // Update summary
+      function updateSummary() {
+        const summaryEl = document.getElementById("summary-result");
+        const totalTests = Object.keys(testResults).length;
+        const passedTests = Object.values(testResults).filter(Boolean).length;
+        const allPassed = passedTests === totalTests;
+
+        summaryEl.innerHTML = `
+                <div class="${allPassed ? "success" : "warning"}">
+                    <h4>Test Summary</h4>
+                    <div class="result-grid">
+                        <div class="stat-box">
+                            <div class="stat-number">${passedTests}/${totalTests}</div>
+                            <div class="stat-label">Tests Passed</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-number">${
+                              testResults.apiConnection ? "✅" : "❌"
+                            }</div>
+                            <div class="stat-label">API Connection</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-number">${
+                              testResults.filterLogic ? "✅" : "❌"
+                            }</div>
+                            <div class="stat-label">Filter Logic</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-number">${
+                              testResults.dataAnalysis ? "✅" : "❌"
+                            }</div>
+                            <div class="stat-label">Data Analysis</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-number">${
+                              testResults.priceValidation ? "✅" : "❌"
+                            }</div>
+                            <div class="stat-label">Price Validation</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-number">${
+                              allPassed ? "🎉" : "⚠️"
+                            }</div>
+                            <div class="stat-label">Overall Status</div>
+                        </div>
+                    </div>
+                    ${
+                      allPassed
+                        ? '<p style="text-align: center; color: #27ae60; font-weight: bold;">🎉 Semua test berhasil! Filter harga berfungsi dengan baik.</p>'
+                        : '<p style="text-align: center; color: #f39c12; font-weight: bold;">⚠️ Beberapa test belum selesai atau gagal.</p>'
+                    }
+                </div>
+            `;
+      }
+
+      // Auto-run tests
+      window.addEventListener("load", () => {
+        setTimeout(() => {
+          testApiConnection();
+        }, 1000);
+      });
+    </script>
+  </body>
+</html>

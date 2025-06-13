@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Test API Connection</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        padding: 20px;
+      }
+      .result {
+        margin: 10px 0;
+        padding: 10px;
+        border-radius: 5px;
+      }
+      .success {
+        background-color: #d4edda;
+        color: #155724;
+      }
+      .error {
+        background-color: #f8d7da;
+        color: #721c24;
+      }
+      .info {
+        background-color: #d1ecf1;
+        color: #0c5460;
+      }
+      button {
+        padding: 10px 20px;
+        margin: 5px;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>🔍 Test API Connection - Dermalyze</h1>
+
+    <div>
+      <button onclick="testAPIConnection()">Test API Connection</button>
+      <button onclick="testProducts()">Test Products Endpoint</button>
+      <button onclick="testLogin()">Test Login</button>
+      <button onclick="clearResults()">Clear Results</button>
+    </div>
+
+    <div id="results"></div>
+
+    <script>
+      const API_BASE = "http://52.77.219.198:3000/api";
+
+      function log(message, type = "info") {
+        const results = document.getElementById("results");
+        const timestamp = new Date().toLocaleTimeString();
+        const div = document.createElement("div");
+        div.className = `result ${type}`;
+        div.innerHTML = `<strong>[${timestamp}]</strong> ${message}`;
+        results.appendChild(div);
+        results.scrollTop = results.scrollHeight;
+      }
+
+      function clearResults() {
+        document.getElementById("results").innerHTML = "";
+      }
+
+      async function testAPIConnection() {
+        log("🔄 Testing API connection...", "info");
+
+        // Test actual API endpoints that are available
+        const endpoints = [
+          "/register",
+          "/login",
+          "/logout",
+          "/predict",
+          "/products",
+          "/history",
+        ];
+
+        for (const endpoint of endpoints) {
+          try {
+            log(`🔍 Testing endpoint: ${API_BASE}${endpoint}`, "info");
+
+            const response = await fetch(`${API_BASE}${endpoint}`, {
+              method: "GET",
+              headers: {
+                "Content-Type": "application/json",
+              },
+            });
+
+            if (response.ok) {
+              const data = await response.text(); // Use text first to avoid JSON parse errors
+              log(
+                `✅ Endpoint ${endpoint} works! Status: ${
+                  response.status
+                }, Response: ${data.substring(0, 200)}`,
+                "success"
+              );
+              break; // Found working endpoint
+            } else {
+              log(
+                `⚠️ Endpoint ${endpoint} returned: ${response.status} ${response.statusText}`,
+                "error"
+              );
+            }
+          } catch (error) {
+            log(`❌ Endpoint ${endpoint} error: ${error.message}`, "error");
+          }
+        }
+      }
+
+      async function testProducts() {
+        log("🔄 Testing products endpoint...", "info");
+
+        try {
+          const response = await fetch(`${API_BASE}/products`, {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            log(
+              `✅ Products endpoint works! Found ${
+                data.length || "unknown"
+              } products`,
+              "success"
+            );
+            log(
+              `📦 Sample data: ${JSON.stringify(data).substring(0, 200)}...`,
+              "info"
+            );
+          } else {
+            const errorText = await response.text();
+            log(
+              `⚠️ Products endpoint error: ${response.status} - ${errorText}`,
+              "error"
+            );
+          }
+        } catch (error) {
+          log(`❌ Products test error: ${error.message}`, "error");
+        }
+      }
+
+      async function testLogin() {
+        log("🔄 Testing login endpoint...", "info");
+
+        try {
+          const response = await fetch(`${API_BASE}/login`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              email: "test@example.com",
+              password: "testpassword",
+            }),
+          });
+
+          const data = await response.json();
+
+          if (response.ok) {
+            log(
+              `✅ Login endpoint accessible! Response: ${JSON.stringify(data)}`,
+              "success"
+            );
+          } else {
+            log(
+              `⚠️ Login endpoint responded with error: ${
+                response.status
+              } - ${JSON.stringify(data)}`,
+              "error"
+            );
+          }
+        } catch (error) {
+          log(`❌ Login test error: ${error.message}`, "error");
+        }
+      }
+
+      async function testDifferentPorts() {
+        log("🔄 Testing different ports and configurations...", "info");
+
+        const configurations = [
+          "http://52.77.219.198:3000", // Without /api
+          "http://52.77.219.198:3000/api", // With /api (current)
+          "http://52.77.219.198:8000", // Different port
+          "http://52.77.219.198:8000/api",
+          "http://52.77.219.198:5000",
+          "http://52.77.219.198:5000/api",
+          "http://52.77.219.198:8090", // PocketBase port
+          "http://52.77.219.198:8090/api",
+        ];
+
+        for (const baseUrl of configurations) {
+          try {
+            log(`🔍 Testing: ${baseUrl}/login`, "info");
+
+            const response = await fetch(`${baseUrl}/login`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                email: "test@example.com",
+                password: "testpassword",
+              }),
+            });
+
+            if (response.status !== 404) {
+              const data = await response.text();
+              log(
+                `✅ Found working endpoint! ${baseUrl} - Status: ${
+                  response.status
+                }, Response: ${data.substring(0, 100)}`,
+                "success"
+              );
+              break;
+            } else {
+              log(`❌ ${baseUrl} - 404 Not Found`, "error");
+            }
+          } catch (error) {
+            log(`❌ ${baseUrl} - Error: ${error.message}`, "error");
+          }
+        }
+      }
+
+      // Auto-test on page load
+      window.onload = function () {
+        log("🚀 Starting API connection tests...", "info");
+        testAPIConnection();
+      };
+    </script>
+  </body>
+</html>

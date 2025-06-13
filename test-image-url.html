@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Image URL - Dermalyze</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .test-url {
+            margin: 15px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: #f9f9f9;
+        }
+        .test-url img {
+            max-width: 300px;
+            max-height: 200px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .status {
+            padding: 5px 10px;
+            border-radius: 3px;
+            font-weight: bold;
+            margin: 5px 0;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .loading { background: #fff3cd; color: #856404; }
+        input {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        code {
+            background: #f8f9fa;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-family: monospace;
+            word-break: break-all;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🖼️ Test Image URL - Dermalyze</h1>
+        <p>Tool untuk test URL gambar dari PocketBase API</p>
+    </div>
+
+    <div class="container">
+        <h3>🧪 Test URL Format</h3>
+        <p>Format yang benar: <code>http://52.77.219.198:8090/api/files/pbc_2982428850/{record_id}/{filename}</code></p>
+        
+        <div>
+            <label>Record ID:</label>
+            <input type="text" id="recordId" placeholder="Contoh: ctr2dgurf472a7x" value="ctr2dgurf472a7x">
+        </div>
+        
+        <div>
+            <label>Filename:</label>
+            <input type="text" id="filename" placeholder="Contoh: image.jpg" value="sample.jpg">
+        </div>
+        
+        <button onclick="testUrl()">Test URL</button>
+        <button onclick="testMultipleFormats()">Test Multiple Formats</button>
+        
+        <div id="results"></div>
+    </div>
+
+    <div class="container">
+        <h3>📊 Test dengan Data History</h3>
+        <button onclick="fetchAndTestHistory()">Ambil Data History & Test Images</button>
+        <div id="historyResults"></div>
+    </div>
+
+    <script>
+        function testImage(url, container, label) {
+            const div = document.createElement('div');
+            div.className = 'test-url';
+            div.innerHTML = `
+                <strong>${label}:</strong><br>
+                <code>${url}</code>
+                <div class="status loading">Testing...</div>
+                <img src="${url}" alt="Test Image" style="display: none;">
+                <div class="placeholder" style="display: none; padding: 20px; background: #f0f0f0; color: #666; text-align: center;">
+                    ❌ Image not found
+                </div>
+            `;
+            
+            const img = div.querySelector('img');
+            const status = div.querySelector('.status');
+            const placeholder = div.querySelector('.placeholder');
+            
+            img.onload = function() {
+                status.textContent = '✅ Success - Image loaded!';
+                status.className = 'status success';
+                img.style.display = 'block';
+                console.log(`✅ Image loaded: ${url}`);
+            };
+            
+            img.onerror = function() {
+                status.textContent = '❌ Failed - Image not found';
+                status.className = 'status error';
+                placeholder.style.display = 'block';
+                console.log(`❌ Image failed: ${url}`);
+            };
+            
+            container.appendChild(div);
+        }
+
+        function testUrl() {
+            const recordId = document.getElementById('recordId').value.trim();
+            const filename = document.getElementById('filename').value.trim();
+            
+            if (!recordId || !filename) {
+                alert('Masukkan Record ID dan Filename!');
+                return;
+            }
+            
+            const container = document.getElementById('results');
+            container.innerHTML = '';
+            
+            const url = `http://52.77.219.198:8090/api/files/pbc_2982428850/${recordId}/${filename}`;
+            testImage(url, container, 'Direct PocketBase URL');
+        }
+
+        function testMultipleFormats() {
+            const recordId = document.getElementById('recordId').value.trim();
+            const filename = document.getElementById('filename').value.trim();
+            
+            if (!recordId || !filename) {
+                alert('Masukkan Record ID dan Filename!');
+                return;
+            }
+            
+            const container = document.getElementById('results');
+            container.innerHTML = '';
+            
+            const urls = [
+                {
+                    url: `http://52.77.219.198:8090/api/files/pbc_2982428850/${recordId}/${filename}`,
+                    label: 'Direct PocketBase (Correct Format)'
+                },
+                {
+                    url: `/files/pbc_2982428850/${recordId}/${filename}`,
+                    label: 'Netlify Proxy'
+                },
+                {
+                    url: `/api/files/pbc_2982428850/${recordId}/${filename}`,
+                    label: 'API Proxy'
+                }
+            ];
+            
+            urls.forEach(({url, label}) => {
+                testImage(url, container, label);
+            });
+        }
+
+        async function fetchAndTestHistory() {
+            const container = document.getElementById('historyResults');
+            container.innerHTML = '<p>Loading history data...</p>';
+            
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    throw new Error('No authentication token found. Please login first.');
+                }
+                
+                const response = await fetch('/api/history?page=1&limit=3', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                console.log('History API response:', data);
+                
+                if (data.success && data.history && data.history.length > 0) {
+                    container.innerHTML = '<h4>Testing Images from History Data:</h4>';
+                    
+                    data.history.forEach((item, index) => {
+                        const div = document.createElement('div');
+                        div.innerHTML = `
+                            <h5>History Item ${index + 1}:</h5>
+                            <p><strong>ID:</strong> ${item.id}</p>
+                            <p><strong>Wajah:</strong> ${item.wajah || 'N/A'}</p>
+                            <p><strong>Created:</strong> ${item.created || item.createdAt}</p>
+                        `;
+                        container.appendChild(div);
+                        
+                        if (item.wajah && item.id) {
+                            // Test the correct format URL
+                            const correctUrl = `http://52.77.219.198:8090/api/files/pbc_2982428850/${item.id}/${item.wajah}`;
+                            testImage(correctUrl, container, `History Image ${index + 1} (Correct Format)`);
+                            
+                            // Test proxy URL
+                            const proxyUrl = `/files/pbc_2982428850/${item.id}/${item.wajah}`;
+                            testImage(proxyUrl, container, `History Image ${index + 1} (Proxy)`);
+                        }
+                    });
+                } else {
+                    container.innerHTML = '<p>No history data found or empty response</p>';
+                }
+                
+            } catch (error) {
+                console.error('History API error:', error);
+                container.innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
+            }
+        }
+
+        // Initialize
+        console.log('🚀 Image URL Test Tool initialized');
+        console.log('💡 Tip: Buka Developer Tools (F12) untuk melihat network requests');
+    </script>
+</body>
+</html>

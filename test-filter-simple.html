@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Filter Harga Sederhana</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .result {
+            background: #e8f5e8;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            font-family: monospace;
+        }
+        .error {
+            background: #ffe6e6;
+            color: #d32f2f;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        button {
+            background: #e67e22;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #d35400;
+        }
+        select {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Test Filter Harga Sederhana</h1>
+        
+        <div class="test-section">
+            <h3>1. Test Koneksi API</h3>
+            <button onclick="testApiConnection()">Test API</button>
+            <div id="api-result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>2. Test Filter Logic</h3>
+            <label>
+                Max Price: 
+                <select id="testMaxPrice">
+                    <option value="0">All Prices</option>
+                    <option value="50000">50,000</option>
+                    <option value="100000">100,000</option>
+                    <option value="200000">200,000</option>
+                    <option value="300000">300,000</option>
+                </select>
+            </label>
+            <button onclick="testFilterLogic()">Test Filter</button>
+            <div id="filter-result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>3. Test Data Analysis</h3>
+            <button onclick="analyzeProductData()">Analyze Data</button>
+            <div id="analysis-result"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://52.77.219.198:3000/api';
+        let testProducts = [];
+
+        // Get auth token from localStorage
+        function getAuthToken() {
+            return localStorage.getItem('authToken') || 
+                   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2xsZWN0aW9uSWQiOiJwYmNfMTczNjQ1NTQ5NCIsImV4cCI6MTc1MDE0MDgzNCwiaWQiOiI0bXdoNWU3MjA0OTcwNDEiLCJyZWZyZXNoYWJsZSI6dHJ1ZSwidHlwZSI6ImF1dGgifQ.guxzRknaLiMQMnyGiXV4U-zni7bRugBaMbWFRDksyqw';
+        }
+
+        // Test API connection
+        async function testApiConnection() {
+            const resultDiv = document.getElementById('api-result');
+            resultDiv.innerHTML = '<div>Testing API connection...</div>';
+            
+            try {
+                const response = await fetch(`${API_BASE}/products`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${getAuthToken()}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                testProducts = data.products || [];
+                
+                resultDiv.innerHTML = `
+                    <div class="result">
+                        ✅ API Connection: SUCCESS<br>
+                        📦 Products loaded: ${testProducts.length}<br>
+                        🔗 Endpoint: ${API_BASE}/products<br>
+                        📊 Response: ${JSON.stringify(data).substring(0, 100)}...
+                    </div>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        ❌ API Connection: FAILED<br>
+                        Error: ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        // Test filter logic
+        function testFilterLogic() {
+            const resultDiv = document.getElementById('filter-result');
+            const maxPrice = parseInt(document.getElementById('testMaxPrice').value);
+            
+            if (testProducts.length === 0) {
+                resultDiv.innerHTML = '<div class="error">❌ No products loaded. Test API connection first.</div>';
+                return;
+            }
+
+            // Apply filter logic
+            let filteredProducts;
+            if (maxPrice === 0) {
+                filteredProducts = [...testProducts];
+            } else {
+                filteredProducts = testProducts.filter(product => (product.price || 0) <= maxPrice);
+            }
+
+            // Show results
+            const priceText = maxPrice === 0 ? 'All Prices' : `≤ Rp ${maxPrice.toLocaleString('id-ID')}`;
+            
+            resultDiv.innerHTML = `
+                <div class="result">
+                    🔍 Filter Test: ${priceText}<br>
+                    📊 Total products: ${testProducts.length}<br>
+                    ✅ Filtered products: ${filteredProducts.length}<br>
+                    📈 Filter ratio: ${((filteredProducts.length / testProducts.length) * 100).toFixed(1)}%
+                </div>
+            `;
+
+            // Show sample filtered products
+            if (filteredProducts.length > 0) {
+                const samples = filteredProducts.slice(0, 3).map(p => 
+                    `${p.product_name}: Rp ${(p.price || 0).toLocaleString('id-ID')}`
+                ).join('<br>');
+                
+                resultDiv.innerHTML += `
+                    <div class="result">
+                        📋 Sample products:<br>
+                        ${samples}
+                    </div>
+                `;
+            }
+        }
+
+        // Analyze product data
+        function analyzeProductData() {
+            const resultDiv = document.getElementById('analysis-result');
+            
+            if (testProducts.length === 0) {
+                resultDiv.innerHTML = '<div class="error">❌ No products loaded. Test API connection first.</div>';
+                return;
+            }
+
+            // Analyze prices
+            const prices = testProducts
+                .map(p => p.price)
+                .filter(price => price !== null && price !== undefined && !isNaN(price))
+                .sort((a, b) => a - b);
+
+            const priceStats = {
+                total: testProducts.length,
+                withPrice: prices.length,
+                withoutPrice: testProducts.length - prices.length,
+                min: prices[0] || 0,
+                max: prices[prices.length - 1] || 0,
+                avg: prices.length > 0 ? Math.round(prices.reduce((a, b) => a + b, 0) / prices.length) : 0
+            };
+
+            // Test price ranges
+            const ranges = [
+                { name: '< 50K', max: 50000 },
+                { name: '50K-100K', max: 100000 },
+                { name: '100K-200K', max: 200000 },
+                { name: '200K-300K', max: 300000 },
+                { name: '> 300K', max: 999999 }
+            ];
+
+            let rangeAnalysis = '';
+            ranges.forEach(range => {
+                const count = testProducts.filter(p => (p.price || 0) <= range.max).length;
+                rangeAnalysis += `${range.name}: ${count} products<br>`;
+            });
+
+            resultDiv.innerHTML = `
+                <div class="result">
+                    📊 Data Analysis:<br>
+                    • Total products: ${priceStats.total}<br>
+                    • Products with price: ${priceStats.withPrice}<br>
+                    • Products without price: ${priceStats.withoutPrice}<br>
+                    • Min price: Rp ${priceStats.min.toLocaleString('id-ID')}<br>
+                    • Max price: Rp ${priceStats.max.toLocaleString('id-ID')}<br>
+                    • Average price: Rp ${priceStats.avg.toLocaleString('id-ID')}<br><br>
+                    📈 Price Range Distribution:<br>
+                    ${rangeAnalysis}
+                </div>
+            `;
+        }
+
+        // Auto-test on load
+        window.addEventListener('load', () => {
+            setTimeout(testApiConnection, 1000);
+        });
+    </script>
+</body>
+</html>
